@@ -1,0 +1,153 @@
+{
+    "name": "1488",
+    "version": "1.0.0",
+    "main": "server.js",
+    "license": "MIT",
+    "private": true,
+    "prettier": {
+        "endOfLine": "lf",
+        "htmlWhitespaceSensitivity": "ignore",
+        "jsxSingleQuote": true,
+        "printWidth": 120,
+        "quoteProps": "consistent",
+        "semi": true,
+        "singleQuote": true,
+        "tabWidth": 4,
+        "trailingComma": "all",
+        "arrowParens": "avoid",
+        "proseWrap": "always",
+        "overrides": [
+            {
+                "files": [
+                    "*.md"
+                ],
+                "options": {
+                    "printWidth": 80
+                }
+            }
+        ]
+    },
+    "babel": {
+        "presets": [
+            [
+                "@babel/env",
+                {
+                    "spec": false,
+                    "loose": false,
+                    "modules": false,
+                    "debug": false,
+                    "include": [
+                        "transform-block-scoping"
+                    ],
+                    "exclude": [],
+                    "useBuiltIns": "usage",
+                    "corejs": 3,
+                    "forceAllTransforms": false,
+                    "ignoreBrowserslistConfig": false,
+                    "shippedProposals": true
+                }
+            ],
+            [
+                "@babel/typescript",
+                {
+                    "isTSX": false,
+                    "jsxPragma": "React",
+                    "allExtensions": false,
+                    "allowNamespaces": true
+                }
+            ],
+            [
+                "@babel/react",
+                {
+                    "pragma": "React.createElement",
+                    "pragmaFrag": "React.Fragment",
+                    "useBuiltIns": false,
+                    "useSpread": true,
+                    "development": false,
+                    "throwIfNamespace": true
+                }
+            ]
+        ],
+        "plugins": [
+            "@babel/proposal-numeric-separator",
+            "@babel/proposal-export-namespace-from",
+            [
+                "@babel/proposal-class-properties",
+                {
+                    "loose": false
+                }
+            ],
+            [
+                "@babel/transform-runtime",
+                {
+                    "corejs": 3,
+                    "helpers": true,
+                    "regenerator": true,
+                    "useESModules": true,
+                    "absoluteRuntime": false,
+                    "version": "^7.8.3"
+                }
+            ],
+            [
+                "auto-import",
+                {
+                    "declarations": [
+                        {
+                            "default": "React",
+                            "path": "react"
+                        }
+                    ]
+                }
+            ],
+            [
+                "styled-jsx/babel",
+                {
+                    "optimizeForSpeed": true,
+                    "sourceMaps": false,
+                    "vendorPrefixes": true
+                }
+            ],
+            "optimize-react"
+        ]
+    },
+    "dependencies": {
+        "@babel/runtime-corejs3": "^7.8.3",
+        "@koa/router": "^8.0.5",
+        "@ripreact/hsl": "^1.2.2",
+        "@ripreact/logger": "^1.0.3",
+        "core-js": "^3.6.4",
+        "koa": "^2.11.0",
+        "koa-morgan": "^1.0.1",
+        "koa-static": "^5.0.0",
+        "react": "^16.12.0",
+        "react-dom": "^16.12.0",
+        "styled-jsx": "^3.2.4"
+    },
+    "devDependencies": {
+        "@babel/core": "^7.8.3",
+        "@babel/plugin-proposal-class-properties": "^7.8.3",
+        "@babel/plugin-proposal-export-namespace-from": "^7.8.3",
+        "@babel/plugin-proposal-numeric-separator": "^7.8.3",
+        "@babel/plugin-transform-runtime": "^7.8.3",
+        "@babel/preset-env": "^7.8.3",
+        "@babel/preset-react": "^7.8.3",
+        "@babel/preset-typescript": "^7.8.3",
+        "@types/react": "^16.9.17",
+        "@types/react-dom": "^16.9.4",
+        "@types/styled-jsx": "^2.2.8",
+        "babel-loader": "^8.0.6",
+        "babel-plugin-auto-import": "^1.0.5",
+        "babel-plugin-optimize-react": "^0.0.4",
+        "compression-webpack-plugin": "^3.1.0",
+        "concurrently": "^5.0.2",
+        "file-loader": "^5.0.2",
+        "html-webpack-plugin": "^3.2.0",
+        "prettier": "^1.19.1",
+        "source-map-loader": "^0.2.4",
+        "terser-webpack-plugin": "^2.3.2",
+        "typescript": "^3.8.0-beta",
+        "url-loader": "^3.0.0",
+        "webpack": "^4.41.5",
+        "webpack-cli": "^3.3.10"
+    }
+}
