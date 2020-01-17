@@ -4,9 +4,6 @@ import { displayName, IntlState, languageTag, Locale } from './Intl';
 import { logger } from './Logger';
 import { Tag } from './Tag';
 
-const translateLogger = logger.fork('translate');
-const missLogger = translateLogger.fork('missing-message');
-
 // region Internal
 /**
  * Translator tag intermediate result.
@@ -151,7 +148,7 @@ export const translate = <M>({
         },
         (buffer, id = buffer.strings.join('{}'), message = messages[id]) => {
             if (!(id in messages)) {
-                missLogger.warning('locale=%o, id=%o', dict, id);
+                logger.warning`intl:missing-message +locale=${dict}`('%o', id);
 
                 return buffer.all.join('');
             }

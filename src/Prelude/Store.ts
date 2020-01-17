@@ -82,7 +82,7 @@ type InferActionType<S, R> = R extends ActionReducer<S, infer P>
         ? () => void
         : (payload: P) => void
     : R extends EffectReducer<S, infer P>
-    ? P extends undefined | void
+    ? P extends (undefined | void)
         ? () => Promise<void>
         : (payload: P) => Promise<void>
     : never;
@@ -111,17 +111,13 @@ export const Store = Tag<
     name => <S, R extends ReadonlyRecord<string, Reducer<S>>>(state: S, reducers: R): Store<S, R> => {
         const watchers = new Set<(state: S) => unknown>();
 
-        const storeLogger = logger.tag('name=' + name);
-        const createdLogger = storeLogger.fork('created');
-        const triggeredLogger = storeLogger.fork('triggered');
-
-        createdLogger.trace(state);
+        logger.trace`store:created +name=${name}`(state);
 
         const reduce = (message: string, key: string, reducer: (state: S, payload: any) => S) => (payload: any) => {
             if (typeof payload == 'undefined' || reducer.length < 2) {
-                triggeredLogger.trace('action=%o', key + message);
+                logger.trace`store:triggered +name=${name}, action=${key + message}`();
             } else {
-                triggeredLogger.trace('action=%o, payload=%o', key + message, payload);
+                logger.trace`store:triggered +name=${name}, action=${key + message}`(payload);
             }
 
             const next = reducer(state, payload) as any;

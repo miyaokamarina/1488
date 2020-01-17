@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { render } from 'react-dom';
+import hash from 'string-hash';
 import css from 'styled-jsx/css';
 import { hsl } from '@ripreact/hsl';
 
@@ -73,6 +74,5 @@ render(
     document.querySelector('#root')!,
 );
 
-const tiPidorLogger = logger.fork('ti:pidor').tag('da', 'pizda');
-
-tiPidorLogger.log('V zhope provoda.');
+logger.log`ti:pidor +da, pizda`('V zhope provoda.');
+logger.log`ti:pidor +da, pizda`(hash('1488'));

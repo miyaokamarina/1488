@@ -106,8 +106,7 @@
                     "sourceMaps": false,
                     "vendorPrefixes": true
                 }
-            ],
-            "optimize-react"
+            ]
         ]
     },
     "dependencies": {
@@ -121,7 +120,6 @@
         "koa-static": "^5.0.0",
         "react": "^16.12.0",
         "react-dom": "^16.12.0",
-        "string-hash": "^1.1.3",
         "styled-jsx": "^3.2.4"
     },
     "devDependencies": {
@@ -136,11 +134,9 @@
         "@types/node": "^13.1.8",
         "@types/react": "^16.9.17",
         "@types/react-dom": "^16.9.4",
-        "@types/string-hash": "^1.1.1",
         "@types/styled-jsx": "^2.2.8",
         "babel-loader": "^8.0.6",
         "babel-plugin-auto-import": "^1.0.5",
-        "babel-plugin-optimize-react": "^0.0.4",
         "compression-webpack-plugin": "^3.1.0",
         "concurrently": "^5.0.2",
         "file-loader": "^5.0.2",

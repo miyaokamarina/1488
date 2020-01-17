@@ -2,10 +2,6 @@ import { ReactNode, useState, createElement, useContext, createContext } from 'r
 import { logger } from './Logger';
 import { Message, MessageArg, translate } from './Translate';
 
-const intlLogger = logger.fork('intl');
-const updatingLogger = intlLogger.fork('updating');
-const switchingLogger = intlLogger.fork('switching');
-
 // region Symbols
 export const displayName = Symbol('displayName');
 export const languageTag = Symbol('languageTag');
@@ -106,7 +102,7 @@ export const IntlProvider = ({ locale, library, children }: IntlProviderProps) =
         locale,
         library,
         addLocales: update => {
-            updatingLogger.trace('%o', update);
+            logger.trace`intl:updating`('%o', update);
 
             Promise.resolve().then(() => {
                 return setState({
@@ -119,7 +115,7 @@ export const IntlProvider = ({ locale, library, children }: IntlProviderProps) =
             });
         },
         setLocale: locale => {
-            switchingLogger.trace('%o', locale);
+            logger.trace`intl:switching`('%o', locale);
 
             Promise.resolve().then(() => {
                 return setState({
@@ -138,7 +134,7 @@ export const IntlProvider = ({ locale, library, children }: IntlProviderProps) =
  *
  * @param id Message identifier.
  */
-export const $ = (...id: readonly [TemplateStringsArray, ...(readonly MessageArg<ReactNode>[])]) => {
+export const $ = (...id: readonly [TemplateStringsArray, ...readonly MessageArg<ReactNode>[]]) => {
     const [ss, ...xs] = id;
 
     return createElement(IntlContext.Consumer, { children: state => translate(state)(ss, ...xs) });
