@@ -1,86 +1,136 @@
-import { IconTheme } from '../Icons';
-
-export interface Theme extends Grids, Fonts, Palettes, Media, Icons {
-    readonly id: string;
+export enum GridSize {
+    smallest = -3,
+    smaller = -2,
+    small = -1,
+    normal = 0,
+    large = 1,
+    larger = 2,
+    largest = 3,
 }
 
-export interface Grids {
-    readonly s: Grid;
-    readonly i: Grid;
+export enum FontSize {
+    small = -1,
+    regular = 0,
+    h6 = 1,
+    h5 = 2,
+    h4 = 3,
+    h3 = 4,
+    h2 = 5,
+    h1 = 6,
+}
+
+export enum FontType {
+    text = 0,
+    ui = 1,
+    code = 2,
+}
+
+export enum ColorCode {
+    primary = 0,
+    secondary = 1,
+    link = 2,
+    visited = 3,
+    success = 4,
+    info = 5,
+    warning = 6,
+    error = 7,
+}
+
+export interface ThemeParams {
+    readonly isInteractive?: boolean;
+    readonly gridSize?: GridSize;
+    readonly isBold?: boolean;
+    readonly fontSize?: FontSize;
+    readonly fontType?: FontType;
+    readonly colorCode?: ColorCode;
+    readonly isPlain?: boolean;
+}
+
+export interface Theme extends Grid, Font, Palette {
+    readonly id: string;
 }
 
 export interface Grid {
-    readonly [Symbol.toPrimitive]: () => number;
-
-    readonly regular: number;
-
-    readonly s: number;
-    readonly xs: number;
-    readonly xxs: number;
-    readonly xxxs: number;
-
-    readonly l: number;
-    readonly xl: number;
-    readonly xxl: number;
-}
-
-export interface Fonts {
-    readonly height: number;
-
-    readonly ui: Font;
-    readonly text: Font;
-    readonly code: Font;
+    /**
+     * Grid cell size.
+     */
+    readonly cell: string;
 }
 
 export interface Font {
+    /**
+     * Font family.
+     */
     readonly family: string;
-    readonly size: number;
-    readonly weight: number;
-    readonly bold: number;
-}
 
-export interface Palettes {
-    readonly regular: Palette;
-    readonly plain: Palette;
+    /**
+     * Line height.
+     */
+    readonly height: string;
+
+    /**
+     * Font size.
+     */
+    readonly size: string;
+
+    /**
+     * Font weight.
+     */
+    readonly weight: string;
 }
 
 export interface Palette {
+    /**
+     * Backdrop color.
+     */
     readonly backdrop: string;
+
+    /**
+     * Focus outline color.
+     */
     readonly focus: string;
+
+    /**
+     * Active element background.
+     */
     readonly active: string;
+
+    /**
+     * Hovered element background.
+     */
     readonly hover: string;
+
+    /**
+     * Even list/table row background.
+     */
     readonly even: string;
+
+    /**
+     * Glow color.
+     */
     readonly glow: string;
-    readonly bg: string;
-    readonly fg: string;
+
+    /**
+     * Regular background.
+     */
+    readonly background: string;
+
+    /**
+     * Foreground color.
+     */
+    readonly foreground: string;
 }
 
-export interface Media {
-    readonly controlKeyboard: boolean;
-    readonly controlHover: boolean;
-    readonly controlTouch: boolean;
-    readonly scrollbarsVisible: boolean;
-    readonly print: boolean;
-    readonly size: Size;
-}
-
-export type Size = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
-
-export interface Icons {
-    readonly iconsBase: string;
-    readonly iconsTheme: IconTheme;
-}
-
-export interface ThemeConfig extends GridsConfig, FontsConfig {
+export interface ThemeDefinition extends GridDefinition, FontsDefinition {
     readonly id: string;
 }
 
-export interface GridsConfig {
-    readonly s: GridConfig;
-    readonly i: GridConfig;
+export interface GridDefinition {
+    readonly display: GridSizesDefinition;
+    readonly interactive: GridSizesDefinition;
 }
 
-export interface GridConfig {
+export interface GridSizesDefinition {
     readonly unsupported: number;
     readonly nano: number;
     readonly micro: number;
@@ -93,18 +143,18 @@ export interface GridConfig {
     readonly phantasm: number;
 }
 
-export interface FontsConfig {
+export interface FontsDefinition {
     readonly scale: number;
     readonly base: number;
     readonly thin: number;
     readonly bold: number;
     readonly bolder: number;
 
-    readonly ui: FontConfig;
-    readonly text: FontConfig;
-    readonly code: FontConfig;
+    readonly ui: FontDefinition;
+    readonly text: FontDefinition;
+    readonly code: FontDefinition;
 }
 
-export interface FontConfig {
+export interface FontDefinition {
     //
 }
