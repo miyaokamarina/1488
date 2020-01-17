@@ -4,8 +4,8 @@ declare module 'csstype' {
     }
 }
 
-declare module "*.css" {
-    const exports: readonly string[];
+declare module '*.css' {
+    const exports: String | readonly string[];
 
     export default exports;
 }

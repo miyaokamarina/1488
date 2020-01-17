@@ -3,7 +3,7 @@ import { render } from 'react-dom';
 import { hsl } from '@ripreact/hsl';
 
 import { en, ru } from './Locales';
-import { $, displayName, IntlProvider, logger, Store, useActions, useIntl, useStore } from './Prelude';
+import { $, displayName, IntlProvider, Store, useActions, useIntl, useStore } from './Prelude';
 
 import styles from './index.css';
 
@@ -59,5 +59,3 @@ render(
     </Setup>,
     document.querySelector('#root')!,
 );
-
-logger.log`ti:pidor +da, pizda`('V zhope provoda.', styles);

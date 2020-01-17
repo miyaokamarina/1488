@@ -102,9 +102,9 @@
             [
                 "styled-jsx/babel",
                 {
-                    "optimizeForSpeed": true,
-                    "sourceMaps": false,
-                    "vendorPrefixes": true
+                    "optimizeForSpeed": false,
+                    "sourceMaps": true,
+                    "vendorPrefixes": false
                 }
             ]
         ]
@@ -141,6 +141,10 @@
         "concurrently": "^5.0.2",
         "file-loader": "^5.0.2",
         "html-webpack-plugin": "^3.2.0",
+        "less": "^3.10.3",
+        "less-loader": "^5.0.0",
+        "postcss": "^7.0.26",
+        "postcss-loader": "^3.0.0",
         "prettier": "^1.19.1",
         "source-map-loader": "^0.2.4",
         "terser-webpack-plugin": "^2.3.2",
