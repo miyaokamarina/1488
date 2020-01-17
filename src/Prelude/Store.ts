@@ -86,8 +86,6 @@ export class Store<S, R extends ReadonlyRecord<PropertyKey, Reducer<S>>> {
 
     /**
      * Update state.
-     *
-     * @param next New state value.
      */
     private u(next: S) {
         if (next === this.s) return;
@@ -97,6 +95,9 @@ export class Store<S, R extends ReadonlyRecord<PropertyKey, Reducer<S>>> {
         for (const watcher of this.w) watcher(this.s);
     }
 
+    /**
+     * Create bound action/effect creator.
+     */
     private r([key, reducer]: readonly [any, any]) {
         return [
             key,

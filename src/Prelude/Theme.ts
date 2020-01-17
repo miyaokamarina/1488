@@ -1,7 +1,3 @@
-// most fundamental grid cell size = 1.25rem
-// grid size                       = (is prose 2 × DimensionsScale 4 × (nesting level 6 × is heading 2)) × is interactive 2 × Dimensions 7 // 1344
-// font weight                     = (is prose 2 × DimensionsScale 4 × (nesting level 6 × is heading 2)  × is bold 2) × is code            //  192
-
 /**
  * Element content scaling factor.
  */
@@ -114,6 +110,11 @@ export interface Theme extends Dimensions, Fonts, Colors {}
  * Depends on parameters:
  *
  * -   is interactive (× 2).
+ *
+ * Depends on definitions:
+ *
+ * -   base,
+ * -   scale.
  */
 export interface Dimensions {
     /**
@@ -230,24 +231,11 @@ export interface ThemeDefinition extends GridDefinition, FontsDefinition {
 
 export interface GridDefinition {
     /**
-     * Most fundamental grid cell size.
+     * Most fundamental grid cell size in rem.
      *
-     * Defaults to `'1.25rem'`.
+     * Defaults to `1.25`.
      */
     readonly base?: number;
-}
-
-export interface GridSizesDefinition {
-    readonly unsupported: number;
-    readonly nano: number;
-    readonly micro: number;
-    readonly mini: number;
-    readonly small: number;
-    readonly medium: number;
-    readonly large: number;
-    readonly lunatic: number;
-    readonly extra: number;
-    readonly phantasm: number;
 }
 
 export interface FontsDefinition {
@@ -265,3 +253,7 @@ export interface FontsDefinition {
 export interface FontDefinition {
     //
 }
+
+export const buildTheme = (_: ThemeDefinition) => {
+    //
+};
