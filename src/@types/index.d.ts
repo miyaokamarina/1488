@@ -1,5 +1,5 @@
 declare module 'csstype' {
-    interface Properties {
+    interface Properties<t> {
         [index: string]: any;
     }
 }

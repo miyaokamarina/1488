@@ -73,4 +73,6 @@ render(
     document.querySelector('#root')!,
 );
 
-logger.log`ti:pidor +da, pizda`('V zhope provoda.');
+const tiPidorLogger = logger.fork('ti:pidor').tag('da', 'pizda');
+
+tiPidorLogger.log('V zhope provoda.');

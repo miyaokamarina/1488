@@ -121,6 +121,7 @@
         "koa-static": "^5.0.0",
         "react": "^16.12.0",
         "react-dom": "^16.12.0",
+        "string-hash": "^1.1.3",
         "styled-jsx": "^3.2.4"
     },
     "devDependencies": {
@@ -132,8 +133,10 @@
         "@babel/preset-env": "^7.8.3",
         "@babel/preset-react": "^7.8.3",
         "@babel/preset-typescript": "^7.8.3",
+        "@types/node": "^13.1.8",
         "@types/react": "^16.9.17",
         "@types/react-dom": "^16.9.4",
+        "@types/string-hash": "^1.1.1",
         "@types/styled-jsx": "^2.2.8",
         "babel-loader": "^8.0.6",
         "babel-plugin-auto-import": "^1.0.5",
