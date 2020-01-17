@@ -3,11 +3,11 @@ import { render } from 'react-dom';
 import { hsl } from '@ripreact/hsl';
 
 import { en, ru } from './Locales';
-import { $, displayName, IntlProvider, Store, useActions, useIntl, useStore } from './Prelude';
+import { $, displayName, IntlProvider, Store, useIntl } from './Prelude';
 
 import styles from './index.css';
 
-const store = Store`main`(1, {
+const store = new Store(1, {
     dec: state => state - 1,
     inc: state => state + 1,
     min: () => 0,
@@ -23,13 +23,15 @@ const Setup = ({ children }: { readonly children: ReactNode }) => {
 };
 
 const App = () => {
-    const state = useStore(store);
-    const { dec, inc, min, max } = useActions(store);
+    const { state } = store;
+    const { dec, inc, min, max } = store.actions;
     const { locale, library, setLocale } = useIntl();
 
     return (
         <div style={{ '--main-color': hsl(state * 10, 100, 50), '--accent-color': hsl(-state * 10, 100, 50) }}>
-            <div className='pidor'>Ti Xyi))0)</div>
+            <div className='pidor'>
+                <span>Ti Xyi))0)</span>
+            </div>
             <div>
                 {$`Hello!`} {$`You sucked ${state} times.`}
             </div>

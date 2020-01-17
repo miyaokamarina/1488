@@ -30,7 +30,7 @@ module.exports = {
                         unsafe_methods: true,
                         unsafe_proto: true,
                         unsafe_undefined: true,
-                        unsafe: true,
+                        // unsafe: true, // Breaks React Hooks?
                     },
                     output: {
                         max_line_len: 160,

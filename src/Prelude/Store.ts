@@ -1,7 +1,5 @@
-import { useState, useEffect } from 'react';
-import { isFunction, objectMap, ReadonlyRecord, stringConcat } from './Etc';
-import { logger } from './Logger';
-import { Tag } from './Tag';
+import { useEffect, useState } from 'react';
+import { isFunction, objectMap, ReadonlyRecord } from './Etc';
 
 /**
  * Synchronous action reducer.
@@ -18,17 +16,10 @@ export interface EffectReducer<S, P = any, D = any, F = any> {
     /**
      * Effect executor.
      *
+     * @param state Current state.
      * @param payload Effect’s payload.
      */
-    readonly exec: (payload: P) => Promise<D>;
-
-    /**
-     * Effect start reducer.
-     *
-     * @param state Current state.
-     * @param payload Effect’ payload.
-     */
-    readonly fire: (state: S, payload: P) => S;
+    readonly exec: (state: S, payload: P) => readonly [S, Promise<D>] | Promise<readonly [S, Promise<D>]>;
 
     /**
      * Effect finish reducer.
@@ -53,118 +44,110 @@ export interface EffectReducer<S, P = any, D = any, F = any> {
 export type Reducer<S> = ActionReducer<S> | EffectReducer<S>;
 
 /**
- * Store type.
+ * The type of mapped bound action/effect creators.
  */
-export interface Store<S, R extends ReadonlyRecord<string, Reducer<S>>> {
-    /**
-     * Subscribe method.
-     *
-     * @param watcher Watcher function will be invoked on state changes.
-     * @return {() => void} Unsubscribe function.
-     */
-    readonly watch: (watcher: (state: S) => unknown) => () => void;
-
-    /**
-     * Returns current state.
-     */
-    readonly getState: () => S;
-
-    /**
-     * Action creators object.
-     */
-    readonly actions: {
-        readonly [K in keyof R]: InferActionType<S, R[K]>;
-    };
-}
+export type Actions<S, R extends ReadonlyRecord<PropertyKey, Reducer<S>>> = {
+    readonly [K in keyof R]: InferActionType<S, R[K]>;
+};
 
 type InferActionType<S, R> = R extends ActionReducer<S, infer P>
-    ? unknown extends P
-        ? () => void
-        : (payload: P) => void
+    ? P extends undefined | void | never
+        ? () => S
+        : (payload: P) => S
     : R extends EffectReducer<S, infer P>
-    ? P extends (undefined | void)
+    ? P extends undefined | void | never
         ? () => Promise<void>
         : (payload: P) => Promise<void>
     : never;
 
 /**
- * Creates new store with specified name, initial state and reducers object.
- *
- * @example ```javascript
- * const store = Store`main`(1, {
- *     add: (state, payload) => state + payload,
- *     sub: (state, payload) => state - payload,
- * })
- * ```
- *
- * @param name Store name as template literal.
- * @param state Initial state.
- * @param reducers Reducers object.
+ * Effector-like state manager.
  */
-export const Store = Tag<
-    unknown,
-    string,
-    <S, R extends ReadonlyRecord<string, Reducer<S>>>(state: S, reducers: R) => Store<S, R>
->(
-    stringConcat,
-    stringConcat,
-    name => <S, R extends ReadonlyRecord<string, Reducer<S>>>(state: S, reducers: R): Store<S, R> => {
-        const watchers = new Set<(state: S) => unknown>();
+export class Store<S, R extends ReadonlyRecord<PropertyKey, Reducer<S>>> {
+    /**
+     * Watchers.
+     */
+    private readonly w = new Set<(state: S) => unknown>();
 
-        logger.trace`store:created +name=${name}`(state);
+    /**
+     * Current state.
+     */
+    private s: S;
 
-        const reduce = (message: string, key: string, reducer: (state: S, payload: any) => S) => (payload: any) => {
-            if (typeof payload == 'undefined' || reducer.length < 2) {
-                logger.trace`store:triggered +name=${name}, action=${key + message}`();
-            } else {
-                logger.trace`store:triggered +name=${name}, action=${key + message}`(payload);
-            }
+    /**
+     * Action/effect functions. In terms of Redux, that’s bound action creators.
+     */
+    readonly actions: Actions<S, R>;
 
-            const next = reducer(state, payload) as any;
+    constructor(state: S, reducers: R) {
+        this.s = state;
+        this.actions = objectMap(reducers, this.r, this) as any;
+    }
 
-            if (next === state) return;
+    /**
+     * Update state.
+     *
+     * @param next New state value.
+     */
+    private u(next: S) {
+        if (next === this.s) return;
 
-            state = next;
+        this.s = next;
 
-            for (const watcher of watchers) watcher(state);
-        };
+        for (const watcher of this.w) watcher(this.s);
+    }
 
-        return {
-            watch: (watcher: (state: S) => unknown) => {
-                watchers.add(watcher);
+    private r([key, reducer]: readonly [any, any]) {
+        return [
+            key,
+            isFunction(reducer)
+                ? // Create bound action creator ↓
+                  (payload: any) => this.u(reducer(this.s, payload))
+                : // Create bound effect creator ↓
+                  async (payload: any) => {
+                      const [next, promise] = await reducer.exec(this.s, payload);
 
-                return () => {
-                    watchers.delete(watcher);
-                };
-            },
+                      this.u(next);
 
-            getState: () => state,
+                      try {
+                          this.u(reducer.done(this.s, await promise));
+                      } catch (error) {
+                          this.u(reducer.done(this.s, error));
+                      }
+                  },
+        ] as const;
+    }
 
-            actions: objectMap(reducers, ([key, reducer]) => {
-                return [
-                    key,
-                    isFunction(reducer)
-                        ? reduce(``, key, reducer)
-                        : (payload: any) => {
-                              reduce(`.fire`, key, reducer.fire)(payload);
+    /**
+     * Creates mapped store. Such store will not have any actions; instead, it
+     * will be automatically updated on parent store changes.
+     *
+     * @param map Mapping function.
+     */
+    map<T>(map: (s: S) => T): Store<T, {}> {
+        const store = new Store(map(this.s), {});
 
-                              return reducer
-                                  .exec(payload)
-                                  .then(reduce(`.done`, key, reducer.done), reduce(`.fail`, key, reducer.fail));
-                          },
-                ];
-            }) as any,
-        };
-    },
-    '',
-);
+        this.w.add(state => store.u(map(state)));
 
-export const useStore = <S, R extends ReadonlyRecord<string, Reducer<S>>>({ getState, watch }: Store<S, R>) => {
-    const [state, setState] = useState(getState());
+        return store;
+    }
 
-    useEffect(() => watch(setState));
+    /**
+     * State getter for React. Automatically manages subscription.
+     */
+    get state() {
+        const { w } = this;
+        const [current, setState] = useState(this.s);
 
-    return state;
-};
+        // Subscribe/unsubscribe ↓
+        useEffect(() => {
+            w.add(setState);
 
-export const useActions = <S, R extends ReadonlyRecord<string, Reducer<S>>>({ actions }: Store<S, R>) => actions;
+            return () => {
+                w.delete(setState);
+            };
+        });
+
+        return current;
+    }
+}

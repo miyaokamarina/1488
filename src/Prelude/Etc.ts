@@ -89,12 +89,14 @@ export const objectReduce = <K extends keyof any, V, B>(
  *
  * @param map Mapping function.
  * @param object Source object.
+ * @param self `this` value for callback.
  */
 export const objectMap = <K extends keyof any, V, L extends keyof any, U>(
     object: ReadonlyRecord<K, V>,
     map: (entry: readonly [K, V]) => readonly [L, U],
+    self?: any
 ): ReadonlyRecord<L, U> => {
-    return Object.fromEntries(Object.entries(object).map(map as any)) as any;
+    return Object.fromEntries(Object.entries(object).map(map as any, self)) as any;
 };
 
 /**

@@ -6,3 +6,7 @@ div {
 .pidor {
     background-color: var(--accent-color);
 }
+
+span {
+    font-style: italic;
+}
