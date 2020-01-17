@@ -71,6 +71,24 @@ module.exports = {
                     },
                 ],
             },
+            {
+                test: /\.css$/iu,
+                exclude: /node_modules/u,
+                use: [
+                    {
+                        loader: 'babel-loader',
+                        options: {
+                            cacheDirectory: true,
+                        },
+                    },
+                    {
+                        loader: require('styled-jsx/webpack').loader,
+                        options: {
+                            type: 'scoped',
+                        },
+                    },
+                ],
+            },
         ],
     },
     plugins: [

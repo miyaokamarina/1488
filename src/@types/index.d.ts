@@ -3,3 +3,9 @@ declare module 'csstype' {
         [index: string]: any;
     }
 }
+
+declare module "*.css" {
+    const exports: readonly string[];
+
+    export default exports;
+}

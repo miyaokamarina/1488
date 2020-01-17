@@ -1,11 +1,11 @@
 import { ReactNode } from 'react';
 import { render } from 'react-dom';
-import hash from 'string-hash';
-import css from 'styled-jsx/css';
 import { hsl } from '@ripreact/hsl';
 
 import { en, ru } from './Locales';
-import { $, displayName, IntlProvider, logger, Store, useActions, useIntl, useStore, csym, cvar } from './Prelude';
+import { $, displayName, IntlProvider, logger, Store, useActions, useIntl, useStore } from './Prelude';
+
+import styles from './index.css';
 
 const store = Store`main`(1, {
     dec: state => state - 1,
@@ -22,16 +22,13 @@ const Setup = ({ children }: { readonly children: ReactNode }) => {
     );
 };
 
-const mainColor = csym`mainColor`;
-const accentColor = csym`accentColor`;
-
 const App = () => {
     const state = useStore(store);
     const { dec, inc, min, max } = useActions(store);
     const { locale, library, setLocale } = useIntl();
 
     return (
-        <div style={{ [mainColor]: hsl(state * 10, 100, 50), [accentColor]: hsl(-state * 10, 100, 50) }}>
+        <div style={{ '--main-color': hsl(state * 10, 100, 50), '--accent-color': hsl(-state * 10, 100, 50) }}>
             <div className='pidor'>Ti Xyi))0)</div>
             <div>
                 {$`Hello!`} {$`You sucked ${state} times.`}
@@ -56,17 +53,6 @@ const App = () => {
     );
 };
 
-const styles = css`
-    div {
-        background-color: ${cvar(mainColor)};
-        color: #fff;
-    }
-
-    .pidor {
-        background-color: ${cvar(accentColor)};
-    }
-`;
-
 render(
     <Setup>
         <App />
@@ -74,5 +60,4 @@ render(
     document.querySelector('#root')!,
 );
 
-logger.log`ti:pidor +da, pizda`('V zhope provoda.');
-logger.log`ti:pidor +da, pizda`(hash('1488'));
+logger.log`ti:pidor +da, pizda`('V zhope provoda.', styles);
