@@ -113,3 +113,11 @@ export const stringConcat = (a: unknown, b: unknown) => String(a) + String(b);
  * @param x Value to check.
  */
 export const isFunction = (x: unknown): x is Function => typeof x == 'function';
+
+/**
+ * Compares two numbers; used as callback to sort `number[]` arrays.
+ *
+ * @param a First operand.
+ * @param b Second operand.
+ */
+export const numericCollator = (a: number, b: number) => a - b;

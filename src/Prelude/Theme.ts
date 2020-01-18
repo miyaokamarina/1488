@@ -102,6 +102,7 @@ export interface Theme extends Dimensions, Fonts, Colors {}
  *
  * Depends on contexts:
  *
+ * -   media context (× n),
  * -   is prose context (× 2),
  * -   dimensions scale context (× 4),
  * -   nesting level context (× 6),
@@ -158,6 +159,7 @@ export interface Dimensions {
  *
  * Depends on contexts:
  *
+ * -   media context (× n),
  * -   is prose context (× 2),
  * -   dimensions scale context (× 4),
  * -   nesting level context (× 6),
@@ -225,35 +227,56 @@ export interface Colors {
     readonly foreground: string;
 }
 
-export interface ThemeDefinition extends GridDefinition, FontsDefinition {
+export interface ThemeDefinition extends GridDefinition, FontDefinition {
     readonly id: string;
 }
 
 export interface GridDefinition {
     /**
-     * Most fundamental grid cell size in rem.
+     * Most fundamental grid cell size in CSS `rem`.
      *
      * Defaults to `1.25`.
      */
     readonly base?: number;
-}
 
-export interface FontsDefinition {
-    readonly scale: number;
-    readonly regular: number;
-    readonly thin: number;
-    readonly bold: number;
-    readonly bolder: number;
+    /**
+     * Scaling factor used to calculate smaller/larger dimensions.
+     *
+     * Smaller/larger dimensions are calculated using the formula _dₙ = b × sⁿ_, where
+     *
+     * -   _dₙ_ is smaller/larger dimension,
+     * -   _n_ is scale number,
+     * -   _b_ is base cell size,
+     * -   _s_ is this parameter.
+     *
+     * Defaults to `1.25`.
+     */
+    readonly scale?: number;
 
-    readonly ui: FontDefinition;
-    readonly text: FontDefinition;
-    readonly code: FontDefinition;
+    /**
+     * Adaptive grid key-value pairs, where key is minimum display width, and value is scale factor.
+     *
+     * @example ```javascript
+     * const grid = {
+     *     [0]: 0.8, // [0, 300) — `16px` for extremely small devices, e.g., smartwatch, good ol’ keypad phone.
+     *     [300]: 1, // [300, 3000) — `20px` for regular devices, e.g., smartphone, tablet, laptop, desktop.
+     *     [3000]: 1.5, // [3000, +∞] — `30px` for extremely large devices, e.g., TV.
+     * };
+     * ```
+     */
+    readonly [width: number]: number;
 }
 
 export interface FontDefinition {
-    //
+    readonly text: string;
+    readonly ui: string;
+    readonly code: string;
 }
 
 export const buildTheme = (_: ThemeDefinition) => {
     //
+
+    return (_: ThemeParams) => {
+        //
+    };
 };
