@@ -1,3 +1,5 @@
+import { numericCollator } from './Etc';
+
 /**
  * Element content scaling factor.
  */
@@ -273,7 +275,20 @@ export interface FontDefinition {
     readonly code: string;
 }
 
-export const buildTheme = (_: ThemeDefinition) => {
+const decIntStr = /^\d+$/u;
+
+export const buildTheme = (definition: ThemeDefinition) => {
+    const keys = Object.keys(definition);
+    const constraints = [] as number[];
+
+    for (let i = 0, l = keys.length, key: PropertyKey; i < l; i++) {
+        key = keys[i];
+
+        if (typeof key === 'string' && decIntStr.test(key)) constraints.push(Number(key));
+    }
+
+    constraints.sort(numericCollator);
+
     //
 
     return (_: ThemeParams) => {
