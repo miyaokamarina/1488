@@ -9,7 +9,7 @@ import {
     diffYears,
     isDate,
 } from './Date';
-import { isNumber, isString, Mutable, ReadonlyRecord } from './Etc';
+import { Mutable, ReadonlyRecord } from './Etc';
 import { MessageStatic } from './Translate';
 
 // region Internal
@@ -1009,9 +1009,9 @@ export const format = <M>(locale: string, raw: unknown, options?: FormatOptions<
     let number: number;
     let string: string;
 
-    if (isNumber(raw)) {
+    if (typeof raw === 'number') {
         format = new Intl.NumberFormat(locale, { ...options, style: options.number });
-    } else if (isString(raw)) {
+    } else if (typeof raw === 'string') {
         format = StringFormat;
     } else if (isDate(raw)) {
         if (!origin) {
@@ -1058,7 +1058,7 @@ export const format = <M>(locale: string, raw: unknown, options?: FormatOptions<
         toString: () => result,
         [Symbol.toPrimitive]: () => result,
         select: ({ other, ...rest }: FormatTable<M>) => {
-            if (!isNumber(raw) && !isString(raw)) return other;
+            if (typeof raw !== 'number' && typeof raw !== 'string') return other;
 
             return (
                 rest[raw] || rest[new Intl.PluralRules(locale, options as FormatOptions<M>).select(raw as any)] || other

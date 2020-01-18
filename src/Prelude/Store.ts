@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { isFunction, objectMap, ReadonlyRecord } from './Etc';
+import { objectMap, ReadonlyRecord } from './Etc';
 
 /**
  * Synchronous action reducer.
@@ -101,7 +101,7 @@ export class Store<S, R extends ReadonlyRecord<PropertyKey, Reducer<S>>> {
     private r([key, reducer]: readonly [any, any]) {
         return [
             key,
-            isFunction(reducer)
+            typeof reducer === 'function'
                 ? // Create bound action creator ↓
                   (payload: any) => this.u(reducer(this.s, payload))
                 : // Create bound effect creator ↓

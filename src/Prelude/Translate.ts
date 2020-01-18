@@ -1,4 +1,3 @@
-import { isArray, isFunction } from './Etc';
 import { format, FormatOptions, Formatted } from './Format';
 import { displayName, IntlState, languageTag, Locale } from './Intl';
 import { logger } from './Logger';
@@ -138,7 +137,7 @@ export const translate = <M>({
             return buffer;
         },
         (buffer, param, formatted?: Formatted<M>) => {
-            if (isArray(param)) formatted = format(locale, ...(param as [any]));
+            if (Array.isArray(param)) formatted = format(locale, ...(param as [any]));
             else formatted = format(locale, param, {});
 
             buffer.formatted.push(formatted);
@@ -153,7 +152,7 @@ export const translate = <M>({
                 return buffer.all.join('');
             }
 
-            if (isFunction(message)) {
+            if (typeof message === 'function') {
                 return message(stubArgs(locale, buffer.formatted));
             }
 

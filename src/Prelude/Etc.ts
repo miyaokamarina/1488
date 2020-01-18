@@ -1,11 +1,4 @@
 /**
- * Checks whether `x` is an array.
- *
- * @param x Value to check.
- */
-export const isArray = (x: unknown): x is readonly unknown[] => Array.isArray(x);
-
-/**
  * Clamp function.
  *
  * @param lo Lower limit.
@@ -56,20 +49,6 @@ export type Mutable<A> = {
 export const isObject = (x: unknown): x is object => typeof x == 'object' && x != null;
 
 /**
- * Checks whether `x` is a string.
- *
- * @param x Value to check.
- */
-export const isString = (x: unknown): x is string => typeof x == 'string';
-
-/**
- * Checks whether `x` is a number.
- *
- * @param x Value to check.
- */
-export const isNumber = (x: unknown): x is number => typeof x == 'number';
-
-/**
  * Reduces an object to a single value.
  *
  * @param reducer Reducer.
@@ -94,25 +73,10 @@ export const objectReduce = <K extends keyof any, V, B>(
 export const objectMap = <K extends keyof any, V, L extends keyof any, U>(
     object: ReadonlyRecord<K, V>,
     map: (entry: readonly [K, V]) => readonly [L, U],
-    self?: any
+    self?: any,
 ): ReadonlyRecord<L, U> => {
     return Object.fromEntries(Object.entries(object).map(map as any, self)) as any;
 };
-
-/**
- * Converts arguments to string and concatenates them.
- *
- * @param a Left operand.
- * @param b Right operand.
- */
-export const stringConcat = (a: unknown, b: unknown) => String(a) + String(b);
-
-/**
- * Checks whether `x` is function.
- *
- * @param x Value to check.
- */
-export const isFunction = (x: unknown): x is Function => typeof x == 'function';
 
 /**
  * Compares two numbers; used as callback to sort `number[]` arrays.
