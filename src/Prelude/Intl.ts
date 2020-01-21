@@ -1,5 +1,5 @@
-import { ReactNode, useState, createElement, useContext, createContext } from 'react';
-import { logger } from './Logger';
+import { createContext, ReactNode, useCallback, useContext } from 'react';
+import { Store, useStore } from './Store';
 import { Message, MessageArg, translate } from './Translate';
 
 // region Symbols
@@ -53,88 +53,57 @@ export interface IntlState<M> {
      */
     readonly library: Library<M>;
 }
-// endregion State
 
-// region Public helpers
 /**
- * Internationalization context type.
+ * Actions to change internationalization state.
  */
-export interface IntlContext extends IntlState<ReactNode> {
+export type IntlActions<M> = {
     /**
      * Adds locales to state.
      */
-    readonly addLocales: (update: Library<ReactNode>) => void;
+    readonly addLocales: (state: IntlState<M>, update: Library<M>) => IntlState<M>;
 
     /**
      * Switches active locale.
      */
-    readonly setLocale: (locale: string) => void;
-}
-
-/**
- * Internationalization provider props.
- */
-export interface IntlProviderProps {
-    /**
-     * Initial locale.
-     */
-    readonly locale: string;
-
-    /**
-     * Initial library.
-     */
-    readonly library: Library<ReactNode>;
-
-    /**
-     * Subtree.
-     */
-    readonly children?: ReactNode;
-}
-
-/**
- * Provides internationalization state.
- *
- * @param state Initial state.
- * @param children Children nodes.
- */
-export const IntlProvider = ({ locale, library, children }: IntlProviderProps) => {
-    const [value, setState]: [IntlContext, (context: IntlContext) => unknown] = useState<IntlContext>({
-        locale,
-        library,
-        addLocales: update => {
-            logger.trace`intl:updating`('%o', update);
-            setState({ ...value, library: { ...value.library, ...update } });
-        },
-        setLocale: locale => {
-            logger.trace`intl:switching`('to locale %o', locale);
-            setState({ ...value, locale });
-        },
-    });
-
-    return createElement(IntlContext.Provider, { value, children });
+    readonly setLocale: (state: IntlState<M>, locale: string) => IntlState<M>;
 };
+// endregion State
 
-/**
- * React message translator tag.
- *
- * @param id Message identifier.
- */
-export const $ = (...id: readonly [TemplateStringsArray, ...(readonly MessageArg<ReactNode>[])]) => {
-    const [ss, ...xs] = id;
-
-    return createElement(IntlContext.Consumer, { children: state => translate(state)(ss, ...xs) });
-};
-
-/**
- * React hook for internationalization context. Useful when you need to get
- * locale setter function.
- */
-export const useIntl = () => useContext(IntlContext);
-
-const IntlContext = createContext<IntlContext>({
-    locale: 'en-us',
-    library: {},
-    setLocale: () => {},
-    addLocales: () => {},
+// region Public helpers
+const setLocale = <M>(state: IntlState<M>, locale: string): IntlState<M> => ({
+    ...state,
+    locale,
 });
+
+const addLocales = <M>(state: IntlState<M>, update: Library<M>): IntlState<M> => ({
+    ...state,
+    library: {
+        ...state.library,
+        ...update,
+    },
+});
+
+export const createIntl = <M>(locale: string, library: Library<M>) => {
+    return new Store({ locale, library } as IntlState<M>, { setLocale, addLocales } as IntlActions<M>);
+};
+
+const IntlContext = createContext(createIntl<ReactNode>('en', {}));
+
+export const useIntl = () => {
+    const store = useContext(IntlContext);
+    const state = useStore(store);
+    const { actions } = store;
+
+    const $ = useCallback(
+        (ss: TemplateStringsArray, ...xs: readonly MessageArg<ReactNode>[]) => {
+            return translate(state)(ss, ...xs);
+        },
+        [state],
+    );
+
+    return { ...state, ...actions, $ } as const;
+};
+
+export const IntlProvider = IntlContext.Provider;
 // endregion Public helpers

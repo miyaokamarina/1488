@@ -72,7 +72,7 @@ export class Store<S, R extends ReadonlyRecord<PropertyKey, Reducer<S>>> {
     /**
      * Current state.
      */
-    private s: S;
+    readonly state: S;
 
     /**
      * Action/effect functions. In terms of Redux, that’s bound action creators.
@@ -80,7 +80,7 @@ export class Store<S, R extends ReadonlyRecord<PropertyKey, Reducer<S>>> {
     readonly actions: Actions<S, R>;
 
     constructor(state: S, reducers: R) {
-        this.s = state;
+        this.state = state;
         this.actions = objectMap(reducers, this.r, this) as any;
     }
 
@@ -88,11 +88,11 @@ export class Store<S, R extends ReadonlyRecord<PropertyKey, Reducer<S>>> {
      * Update state.
      */
     private u(next: S) {
-        if (next === this.s) return;
+        if (next === this.state) return;
 
-        this.s = next;
+        (this as any).state = next;
 
-        for (const watcher of this.w) watcher(this.s);
+        for (const watcher of this.w) watcher(this.state);
     }
 
     /**
@@ -103,17 +103,17 @@ export class Store<S, R extends ReadonlyRecord<PropertyKey, Reducer<S>>> {
             key,
             typeof reducer === 'function'
                 ? // Create bound action creator ↓
-                  (payload: any) => this.u(reducer(this.s, payload))
+                  (payload: any) => this.u(reducer(this.state, payload))
                 : // Create bound effect creator ↓
                   async (payload: any) => {
-                      const [next, promise] = await reducer.exec(this.s, payload);
+                      const [next, promise] = await reducer.exec(this.state, payload);
 
                       this.u(next);
 
                       try {
-                          this.u(reducer.done(this.s, await promise));
+                          this.u(reducer.done(this.state, await promise));
                       } catch (error) {
-                          this.u(reducer.done(this.s, error));
+                          this.u(reducer.done(this.state, error));
                       }
                   },
         ] as const;
@@ -126,29 +126,28 @@ export class Store<S, R extends ReadonlyRecord<PropertyKey, Reducer<S>>> {
      * @param map Mapping function.
      */
     map<T>(map: (s: S) => T): Store<T, {}> {
-        const store = new Store(map(this.s), {});
+        const store = new Store(map(this.state), {});
 
         this.w.add(state => store.u(map(state)));
 
         return store;
     }
 
-    /**
-     * State getter for React. Automatically manages subscription.
-     */
-    get state() {
+    watch(watcher: (state: S) => unknown) {
         const { w } = this;
-        const [current, setState] = useState(this.s);
 
-        // Subscribe/unsubscribe ↓
-        useEffect(() => {
-            w.add(setState);
+        w.add(watcher);
 
-            return () => {
-                w.delete(setState);
-            };
-        });
-
-        return current;
+        return () => void w.delete(watcher);
     }
 }
+
+export const useStore = <S, R extends ReadonlyRecord<PropertyKey, Reducer<S>>>(store: Store<S, R>) => {
+    const [state, setState] = useState(store.state);
+
+    useEffect(() => {
+        return store.watch(setState);
+    }, [store, setState]);
+
+    return state;
+};

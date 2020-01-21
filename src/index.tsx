@@ -3,7 +3,7 @@ import { render } from 'react-dom';
 import { hsl } from '@ripreact/hsl';
 
 import { en, ru } from './Locales';
-import { $, displayName, IntlProvider, Store, useIntl } from './Prelude';
+import { createIntl, displayName, IntlProvider, Store, useIntl, useStore } from './Prelude';
 
 import styles from './index.css';
 
@@ -11,24 +11,23 @@ const store = new Store(1, {
     dec: state => state - 1,
     inc: state => state + 1,
     min: () => 0,
-    max: () => 14_88,
+    max: () => 12309,
 });
 
+const { dec, inc, min, max } = store.actions;
+
+const intl = createIntl<ReactNode>('en', { en, ru });
+
 const Setup = ({ children }: { readonly children: ReactNode }) => {
-    return (
-        <IntlProvider locale='en' library={{ en, ru }}>
-            {children}
-        </IntlProvider>
-    );
+    return <IntlProvider value={intl}>{children}</IntlProvider>;
 };
 
 const App = () => {
-    const { state } = store;
-    const { dec, inc, min, max } = store.actions;
-    const { locale, library, setLocale } = useIntl();
+    const state = useStore(store);
+    const { locale, library, setLocale, $ } = useIntl();
 
     return (
-        <div style={{ '--main-color': hsl(state * 10, 100, 50), '--accent-color': hsl(-state * 10, 100, 50) }}>
+        <div style={{ '--main-color': hsl(state * 10, 100, 50), '--accent-color': hsl(state * 10 + 180, 100, 50) }}>
             <div className='pidor'>
                 <span>Ti Xyi))0)</span>
             </div>
@@ -39,7 +38,7 @@ const App = () => {
                 <button onClick={dec}>-</button>
                 <button onClick={inc}>+</button>
                 <button onClick={min}>0</button>
-                <button onClick={max}>1488</button>
+                <button onClick={max}>12309</button>
             </div>
             <div>
                 {Object.entries(library).map(([key, { [displayName]: name }]) => {
