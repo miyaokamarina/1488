@@ -103,26 +103,11 @@ export const IntlProvider = ({ locale, library, children }: IntlProviderProps) =
         library,
         addLocales: update => {
             logger.trace`intl:updating`('%o', update);
-
-            Promise.resolve().then(() => {
-                return setState({
-                    ...value,
-                    library: {
-                        ...value.library,
-                        ...update,
-                    },
-                });
-            });
+            setState({ ...value, library: { ...value.library, ...update } });
         },
         setLocale: locale => {
-            logger.trace`intl:switching`('%o', locale);
-
-            Promise.resolve().then(() => {
-                return setState({
-                    ...value,
-                    locale,
-                });
-            });
+            logger.trace`intl:switching`('to locale %o', locale);
+            setState({ ...value, locale });
         },
     });
 
@@ -134,7 +119,7 @@ export const IntlProvider = ({ locale, library, children }: IntlProviderProps) =
  *
  * @param id Message identifier.
  */
-export const $ = (...id: readonly [TemplateStringsArray, ...readonly MessageArg<ReactNode>[]]) => {
+export const $ = (...id: readonly [TemplateStringsArray, ...(readonly MessageArg<ReactNode>[])]) => {
     const [ss, ...xs] = id;
 
     return createElement(IntlContext.Consumer, { children: state => translate(state)(ss, ...xs) });

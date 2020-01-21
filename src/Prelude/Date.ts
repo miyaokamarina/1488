@@ -17,22 +17,20 @@ export const diffDays: TimeDiff = (a, b) => {
         a,
         b,
         Math.trunc((ad.getTime() - getTimeZoneOffset(ad) - (bd.getTime() - getTimeZoneOffset(bd))) / 86400000),
-        (d: Date) => d.getDate(),
-        (d: Date, n: number) => d.setDate(n),
+        getDate,
+        setDate,
     );
 };
 
 export const diffWeeks: TimeDiff = (a, b) => Math.trunc(diffDays(a, b) / 7);
 
 export const diffMonths: TimeDiff = (a, b) => {
-    return diff(a, b, (getY(a) - getY(b)) * 12 + getM(a) - getM(b), getM, (d, n) => {
-        return d.setMonth(n);
-    });
+    return diff(a, b, (getYear(a) - getYear(b)) * 12 + getMonth(a) - getMonth(b), getMonth, setMonth);
 };
 
 export const diffQuarters: TimeDiff = (a, b) => Math.trunc(diffMonths(a, b) / 3);
 
-export const diffYears: TimeDiff = (a, b) => diff(a, b, getY(a) - getY(b), getY, (d, n) => d.setFullYear(n));
+export const diffYears: TimeDiff = (a, b) => diff(a, b, getYear(a) - getYear(b), getYear, setFullYear);
 
 export const ms = (ms: number) => {
     const abs = Math.abs(ms);
@@ -82,15 +80,14 @@ const getTimeZoneOffset = (a: Date) => {
     return base * 60000 + ms;
 };
 
-const getM = (d: Date) => {
-    return d.getMonth();
-};
-
-const getY = (d: Date) => {
-    return d.getFullYear();
-};
-
 const cloneDate = (d: Date) => {
     return new Date(d);
 };
+
+const getDate = (d: Date) => d.getDate();
+const setDate = (d: Date, n: number) => d.setDate(n);
+const getMonth = (d: Date) => d.getMonth();
+const setMonth = (d: Date, n: number) => d.setMonth(n);
+const getYear = (d: Date) => d.getFullYear();
+const setFullYear = (d: Date, n: number) => d.setFullYear(n);
 // endregion Internal

@@ -1,29 +1,8 @@
 import { format, FormatOptions, Formatted } from './Format';
 import { displayName, IntlState, languageTag, Locale } from './Intl';
 import { logger } from './Logger';
-import { Tag } from './Tag';
 
 // region Internal
-/**
- * Translator tag intermediate result.
- */
-interface TagBuffer<M> {
-    /**
-     * Formatted values list.
-     */
-    readonly formatted: Formatted<M>[];
-
-    /**
-     * String parts list.
-     */
-    readonly strings: string[];
-
-    /**
-     * All parts list.
-     */
-    readonly all: MessageStatic<M>[];
-}
-
 /**
  * Generates stub arguments for dynamic messages.
  *
@@ -125,44 +104,55 @@ export type MessageArg<M> = unknown | readonly [unknown, (FormatOptions<M> | nul
  *
  * @param state Target state.
  */
-export const translate = <M>({
-    locale: dict,
-    library: { [dict]: { [languageTag]: locale, ...messages } = defaultLocale<M>(dict) },
-}: IntlState<M>) => {
-    return Tag<MessageArg<M>, TagBuffer<M>, MessageStatic<M>>(
-        (buffer, string) => {
-            buffer.strings.push(string);
-            buffer.all.push(string);
+export const translate = <M>({ locale: localeId, library }: IntlState<M>) => {
+    const locale = library[localeId] || defaultLocale<M>(localeId);
+    const localeTag = locale[languageTag];
 
-            return buffer;
-        },
-        (buffer, param, formatted?: Formatted<M>) => {
-            if (Array.isArray(param)) formatted = format(locale, ...(param as [any]));
-            else formatted = format(locale, param, {});
+    return (tsa: TemplateStringsArray, ...params: readonly unknown[]) => {
+        const strings = [] as string[];
+        const all = [] as MessageStatic<M>[];
+        const formats = [] as Formatted<M>[];
 
-            buffer.formatted.push(formatted);
-            buffer.all.push(formatted);
+        let string: string;
+        let param: unknown;
+        let formatted: Formatted<M>;
+        let i = 0;
+        const l = params.length;
 
-            return buffer;
-        },
-        (buffer, id = buffer.strings.join('{}'), message = messages[id]) => {
-            if (!(id in messages)) {
-                logger.warning`intl:missing-message +locale=${dict}`('%o', id);
+        for (; i < l; i++) {
+            string = tsa[i];
 
-                return buffer.all.join('');
-            }
+            strings.push(string);
+            all.push(string);
 
-            if (typeof message === 'function') {
-                return message(stubArgs(locale, buffer.formatted));
-            }
+            param = params[i];
 
-            return message;
-        },
-        {
-            formatted: [],
-            strings: [],
-            all: [],
-        },
-    );
+            if (Array.isArray(param)) formatted = format(localeTag, ...(param as [any]));
+            else formatted = format(localeTag, param, {});
+
+            formats.push(formatted);
+            all.push(formatted);
+        }
+
+        string = tsa[l];
+
+        strings.push(string);
+        all.push(string);
+
+        const id = strings.join('{}');
+        const message = locale[id] as any;
+
+        if (!(id in locale)) {
+            logger.warning`intl:missing-message +locale=${localeId}`('%o', id);
+
+            return all.join('');
+        }
+
+        if (typeof message === 'function') {
+            return message(stubArgs(localeTag, formats));
+        }
+
+        return message;
+    };
 };
 // endregion Translate

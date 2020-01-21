@@ -77,11 +77,3 @@ export const objectMap = <K extends keyof any, V, L extends keyof any, U>(
 ): ReadonlyRecord<L, U> => {
     return Object.fromEntries(Object.entries(object).map(map as any, self)) as any;
 };
-
-/**
- * Compares two numbers; used as callback to sort `number[]` arrays.
- *
- * @param a First operand.
- * @param b Second operand.
- */
-export const numericCollator = (a: number, b: number) => a - b;

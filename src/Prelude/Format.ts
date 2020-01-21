@@ -80,7 +80,18 @@ const isOutOfBounds = <M>(sign: number, diffs: TimeDiffs, options: FormatOptions
  * @param diffs Date differences record.
  */
 const selectRelativeUnit = (diffs: TimeDiffs) => {
-    for (const [unit, diff] of Object.entries(diffs)) {
+    const entries = Object.entries(diffs);
+    let entry: readonly [NativeRelativeTimeUnit, number];
+    let unit: NativeRelativeTimeUnit;
+    let diff: number;
+    let i = 0;
+    const l = entries.length;
+
+    for (; i < l; i++) {
+        entry = entries[i] as any;
+        unit = entry[0];
+        diff = entry[1];
+
         if (unit != 'quarter' && diff) {
             return [diff, unit] as const;
         }
@@ -122,6 +133,28 @@ const normalizeOptions = <M>(options?: FormatOptions<M> | null) => {
         lowerUnit: options.lowerUnit || maximumUnit || 'day',
     } as FormatOptions<M>;
 };
+
+function select(this: Formatted<any>, { other, ...rest }: FormatTable<any>) {
+    const raw = this.raw;
+    const locale = this.locale;
+    const options = this.options;
+
+    if (typeof raw !== 'number' && typeof raw !== 'string') return other;
+
+    return rest[raw] || rest[new Intl.PluralRules(locale, options as FormatOptions<any>).select(raw as any)] || other;
+}
+
+function toString(this: Formatted<any>) {
+    return this.result;
+}
+
+function update(this: Formatted<any>, value: any) {
+    return (this.format as any)(this.locale, value, this.options);
+}
+
+function configure(this: Formatted<any>, options: FormatOptions<any>) {
+    return (this.format as any)(this.locale, this.raw, normalizeOptions(options));
+}
 // endregion Internal
 
 // region Types
@@ -986,6 +1019,9 @@ export interface Formatted<M> extends ReadonlyArray<MessageStatic<M>> {
     readonly date: Date;
 
     readonly select: (table: FormatTable<M>) => MessageStatic<M>;
+
+    readonly result: MessageStatic<M>;
+    readonly format: unknown;
 }
 // endregion Types
 
@@ -1044,26 +1080,22 @@ export const format = <M>(locale: string, raw: unknown, options?: FormatOptions<
 
     if (transform) result = transform(result as string, format.formatToParts(...value), locale);
 
-    return Object.assign(([result] as any) as Formatted<M>, {
+    return Object.assign([result] as any, {
         raw,
         locale,
         options,
+        result,
+        format,
 
-        update: (value: unknown) => format(locale, value, options),
-        configure: (options: FormatOptions<M>) => format(locale, raw, normalizeOptions(options)),
+        update,
+        configure,
 
         number,
         string,
         date: new Date(number),
-        toString: () => result,
-        [Symbol.toPrimitive]: () => result,
-        select: ({ other, ...rest }: FormatTable<M>) => {
-            if (typeof raw !== 'number' && typeof raw !== 'string') return other;
-
-            return (
-                rest[raw] || rest[new Intl.PluralRules(locale, options as FormatOptions<M>).select(raw as any)] || other
-            );
-        },
+        toString,
+        [Symbol.toPrimitive]: toString,
+        select,
     });
 };
 // endregion Format
