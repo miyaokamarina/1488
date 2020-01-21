@@ -3,9 +3,11 @@ import { render } from 'react-dom';
 import { hsl } from '@ripreact/hsl';
 
 import { en, ru } from './Locales';
-import { createIntl, displayName, IntlProvider, Store, useIntl, useStore } from './Prelude';
+import { Store, useStore } from './Store';
 
 import styles from './index.css';
+import { createTldr, displayName } from './Tldr/Tldr';
+import { TldProvider, useTldr } from './Tldr/useTldr';
 
 const store = new Store(1, {
     dec: state => state - 1,
@@ -16,15 +18,15 @@ const store = new Store(1, {
 
 const { dec, inc, min, max } = store.actions;
 
-const intl = createIntl<ReactNode>('en', { en, ru });
+const intl = createTldr<ReactNode>('en', { en, ru });
 
 const Setup = ({ children }: { readonly children: ReactNode }) => {
-    return <IntlProvider value={intl}>{children}</IntlProvider>;
+    return <TldProvider value={intl}>{children}</TldProvider>;
 };
 
 const App = () => {
     const state = useStore(store);
-    const { locale, library, setLocale, $ } = useIntl();
+    const { locale, library, setLocale, $ } = useTldr();
 
     return (
         <div style={{ '--main-color': hsl(state * 10, 100, 50), '--accent-color': hsl(state * 10 + 180, 100, 50) }}>

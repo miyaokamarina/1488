@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react';
-import { objectMap, ReadonlyRecord } from './Etc';
+import { Mutable, objectMap, ReadonlyRecord } from '../Prelude';
 
 /**
  * Synchronous action reducer.
@@ -50,15 +49,18 @@ export type Actions<S, R extends ReadonlyRecord<PropertyKey, Reducer<S>>> = {
     readonly [K in keyof R]: InferActionType<S, R[K]>;
 };
 
+/**
+ * Internal helper type to infer action creator type from reducer type.
+ */
 type InferActionType<S, R> = R extends ActionReducer<S, infer P>
     ? P extends undefined | void | never
         ? () => S
         : (payload: P) => S
     : R extends EffectReducer<S, infer P>
-    ? P extends undefined | void | never
-        ? () => Promise<void>
-        : (payload: P) => Promise<void>
-    : never;
+        ? P extends undefined | void | never
+            ? () => Promise<void>
+            : (payload: P) => Promise<void>
+        : never;
 
 /**
  * Effector-like state manager.
@@ -90,7 +92,7 @@ export class Store<S, R extends ReadonlyRecord<PropertyKey, Reducer<S>>> {
     private u(next: S) {
         if (next === this.state) return;
 
-        (this as any).state = next;
+        (this as Mutable<Store<S, R>>).state = next;
 
         for (const watcher of this.w) watcher(this.state);
     }
@@ -103,25 +105,25 @@ export class Store<S, R extends ReadonlyRecord<PropertyKey, Reducer<S>>> {
             key,
             typeof reducer === 'function'
                 ? // Create bound action creator ↓
-                  (payload: any) => this.u(reducer(this.state, payload))
+                (payload: any) => this.u(reducer(this.state, payload))
                 : // Create bound effect creator ↓
-                  async (payload: any) => {
-                      const [next, promise] = await reducer.exec(this.state, payload);
+                async (payload: any) => {
+                    const [next, promise] = await reducer.exec(this.state, payload);
 
-                      this.u(next);
+                    this.u(next);
 
-                      try {
-                          this.u(reducer.done(this.state, await promise));
-                      } catch (error) {
-                          this.u(reducer.done(this.state, error));
-                      }
-                  },
+                    try {
+                        this.u(reducer.done(this.state, await promise));
+                    } catch (error) {
+                        this.u(reducer.done(this.state, error));
+                    }
+                },
         ] as const;
     }
 
     /**
-     * Creates mapped store. Such store will not have any actions; instead, it
-     * will be automatically updated on parent store changes.
+     * Creates mapped store. This store will not have any actions; instead, it
+     * will be automatically updated when parent store changes.
      *
      * @param map Mapping function.
      */
@@ -141,13 +143,3 @@ export class Store<S, R extends ReadonlyRecord<PropertyKey, Reducer<S>>> {
         return () => void w.delete(watcher);
     }
 }
-
-export const useStore = <S, R extends ReadonlyRecord<PropertyKey, Reducer<S>>>(store: Store<S, R>) => {
-    const [state, setState] = useState(store.state);
-
-    useEffect(() => {
-        return store.watch(setState);
-    }, [store, setState]);
-
-    return state;
-};

@@ -1,48 +1,21 @@
 import { format, FormatOptions, Formatted } from './Format';
-import { displayName, IntlState, languageTag, Locale } from './Intl';
-import { logger } from './Logger';
+import {
+    displayName,
+    languageTag,
+    Translation,
+    TldState,
+    TranslationMessageStatic,
+    TranslationMessageDynamic,
+} from './Tldr';
 
 // region Internal
-/**
- * Generates stub arguments for dynamic messages.
- *
- * @param locale Active locale.
- * @param formatted Real formatted value wrappers.
- */
-function* stubArgs<M>(locale: string, formatted: readonly Formatted<M>[]) {
-    yield* formatted;
-
-    while (true) {
-        yield format(locale, NaN, {});
-    }
-}
-
-const defaultLocale = <M>(locale: string): Locale<M> => ({
+const defaultLocale = <M>(locale: string): Translation<M> => ({
     [displayName]: locale,
     [languageTag]: locale,
 });
 // endregion Internal
 
 // region Types
-/**
- * Message type.
- */
-export type Message<M> = MessageStatic<M> | MessageDynamic<M>;
-
-/**
- * Static message type.
- */
-export type MessageStatic<M> = M | string | number | boolean | null | undefined | Formatted<M>;
-
-/**
- * Dynamic (parametric) message type.
- *
- * @param params Iterator of formatted values. May yield more values than was
- * passed to `translateMessage` tag, but all “fake” values will be just a
- * formatted `NaN`s.
- */
-export type MessageDynamic<M> = (args: IterableIterator<Formatted<M>>) => MessageStatic<M>;
-
 /**
  * Message translator template argument type.
  */
@@ -104,13 +77,13 @@ export type MessageArg<M> = unknown | readonly [unknown, (FormatOptions<M> | nul
  *
  * @param state Target state.
  */
-export const translate = <M>({ locale: localeId, library }: IntlState<M>) => {
+export const translate = <M>({ locale: localeId, library }: TldState<M>) => {
     const locale = library[localeId] || defaultLocale<M>(localeId);
     const localeTag = locale[languageTag];
 
     return (tsa: TemplateStringsArray, ...params: readonly unknown[]) => {
         const strings = [] as string[];
-        const all = [] as MessageStatic<M>[];
+        const all = [] as TranslationMessageStatic<M>[];
         const formats = [] as Formatted<M>[];
 
         let string: string;
@@ -140,16 +113,14 @@ export const translate = <M>({ locale: localeId, library }: IntlState<M>) => {
         all.push(string);
 
         const id = strings.join('{}');
-        const message = locale[id] as any;
+        const message = locale[id];
 
         if (!(id in locale)) {
-            logger.warning`intl:missing-message +locale=${localeId}`('%o', id);
-
             return all.join('');
         }
 
         if (typeof message === 'function') {
-            return message(stubArgs(localeTag, formats));
+            return (message as TranslationMessageDynamic<M>)(...formats);
         }
 
         return message;

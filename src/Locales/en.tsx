@@ -1,11 +1,11 @@
 import { ReactNode } from 'react';
-import { displayName, languageTag, Locale } from '../Prelude';
+import { displayName, languageTag, Translation } from '../Tldr/Tldr';
 
-export const en: Locale<ReactNode> = {
+export const en: Translation<ReactNode> = {
     [displayName]: 'English',
     [languageTag]: 'en-us',
     // 'Hello!': 'Hello!',
-    'You sucked {} times.': ([n]) => {
+    'You sucked {} times.': n => {
         return n.select({
             0: (
                 <>
