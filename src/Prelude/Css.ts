@@ -40,3 +40,10 @@ export const classes = (...classes: Classes[]) => {
 
     return buffer.join(' ');
 };
+
+/**
+ * Converts number to CSS `rem`.
+ *
+ * @param x Number to convert.
+ */
+export const rem = (x: number) => x + 'rem';
