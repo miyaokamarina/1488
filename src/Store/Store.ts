@@ -1,4 +1,4 @@
-import { Mutable, objectMap, ReadonlyRecord } from '../Prelude';
+import { Mutable, ReadonlyRecord } from '../Prelude';
 
 /**
  * Synchronous action reducer.
@@ -57,10 +57,10 @@ type InferActionType<S, R> = R extends ActionReducer<S, infer P>
         ? () => S
         : (payload: P) => S
     : R extends EffectReducer<S, infer P>
-        ? P extends undefined | void | never
-            ? () => Promise<void>
-            : (payload: P) => Promise<void>
-        : never;
+    ? P extends undefined | void | never
+        ? () => Promise<void>
+        : (payload: P) => Promise<void>
+    : never;
 
 /**
  * Effector-like state manager.
@@ -83,7 +83,7 @@ export class Store<S, R extends ReadonlyRecord<PropertyKey, Reducer<S>>> {
 
     constructor(state: S, reducers: R) {
         this.state = state;
-        this.actions = objectMap(reducers, this.r, this) as any;
+        this.actions = Object.fromEntries(Object.entries(reducers).map(this.r, this)) as any;
     }
 
     /**
@@ -105,19 +105,19 @@ export class Store<S, R extends ReadonlyRecord<PropertyKey, Reducer<S>>> {
             key,
             typeof reducer === 'function'
                 ? // Create bound action creator ↓
-                (payload: any) => this.u(reducer(this.state, payload))
+                  (payload: any) => this.u(reducer(this.state, payload))
                 : // Create bound effect creator ↓
-                async (payload: any) => {
-                    const [next, promise] = await reducer.exec(this.state, payload);
+                  async (payload: any) => {
+                      const [next, promise] = await reducer.exec(this.state, payload);
 
-                    this.u(next);
+                      this.u(next);
 
-                    try {
-                        this.u(reducer.done(this.state, await promise));
-                    } catch (error) {
-                        this.u(reducer.done(this.state, error));
-                    }
-                },
+                      try {
+                          this.u(reducer.done(this.state, await promise));
+                      } catch (error) {
+                          this.u(reducer.done(this.state, error));
+                      }
+                  },
         ] as const;
     }
 
